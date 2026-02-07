@@ -1,0 +1,2154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-title" content="Krokets">
+    <title>Krokets</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiUGV0Q2FyZSBQcm8iLCJzaG9ydF9uYW1lIjoiUGV0Q2FyZSIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMDAwMDAwIiwidGhlbWVfY29sb3IiOiIjMDAwMDAwIiwiaWNvbnMiOlt7InNyYyI6Imljb24zLnBuZyIsInNpemVzIjoiMTkyeDE5MiJ9XX0=">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+        }
+
+        html {
+            background: #000;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        :root {
+            --ios-bg: #000000;
+            --ios-card: rgba(30, 30, 32, 0.85);
+            --ios-blue: #007AFF;
+            --ios-green: #34C759;
+            --ios-orange: #FF9500;
+            --ios-red: #FF3B30;
+            --ios-purple: #AF52DE;
+            --ios-pink: #FF2D55;
+            --ios-teal: #5AC8FA;
+            --ios-yellow: #FFCC00;
+            --ios-gray: #8E8E93;
+            --ios-light-gray: #48484A;
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        /* App Container */
+        #app {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            background: radial-gradient(ellipse at top, rgba(10, 132, 255, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at bottom right, rgba(191, 90, 242, 0.1) 0%, transparent 40%);
+        }
+
+        /* Status Bar */
+        .status-bar {
+            height: env(safe-area-inset-top, 47px);
+            width: 100%;
+            background: transparent;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        /* Header */
+        .header {
+            padding: 8px 20px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 0.5px solid var(--glass-border);
+            position: fixed;
+            top: env(safe-area-inset-top, 0);
+            left: 0;
+            right: 0;
+            z-index: 100;
+            height: 52px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--ios-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.92);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Content Area */
+        .content {
+            position: fixed;
+            top: calc(env(safe-area-inset-top, 0) + 52px);
+            left: 0;
+            right: 0;
+            bottom: calc(env(safe-area-inset-bottom, 0) + 83px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 16px;
+        }
+
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards Premium */
+        .card {
+            background: var(--ios-card);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 0.5px solid var(--glass-border);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+            transition: transform 0.15s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:active {
+            transform: scale(0.98);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        }
+
+        /* Animal Card */
+        .animal-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .animal-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .animal-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--ios-blue), var(--ios-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .animal-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .animal-avatar-placeholder {
+            font-size: 28px;
+            filter: grayscale(0.3);
+        }
+
+        .animal-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .animal-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            letter-spacing: -0.3px;
+        }
+
+        .animal-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            color: var(--ios-gray);
+        }
+
+        .badge {
+            background: rgba(0, 122, 255, 0.15);
+            color: var(--ios-blue);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 0.5px solid rgba(0, 122, 255, 0.3);
+        }
+
+        .badge-orange {
+            background: rgba(255, 149, 0, 0.15);
+            color: var(--ios-orange);
+            border-color: rgba(255, 149, 0, 0.3);
+        }
+
+        .badge-red {
+            background: rgba(255, 59, 48, 0.15);
+            color: var(--ios-red);
+            border-color: rgba(255, 59, 48, 0.3);
+        }
+
+        /* Progress Bar Premium */
+        .progress-section {
+            margin-top: 4px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        .progress-label {
+            color: var(--ios-gray);
+            font-weight: 500;
+        }
+
+        .progress-value {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-green { background: var(--ios-green); box-shadow: 0 0 10px rgba(52, 199, 89, 0.4); }
+        .progress-blue { background: var(--ios-blue); box-shadow: 0 0 10px rgba(0, 122, 255, 0.4); }
+        .progress-orange { background: var(--ios-orange); box-shadow: 0 0 10px rgba(255, 149, 0, 0.4); }
+        .progress-red { background: var(--ios-red); box-shadow: 0 0 10px rgba(255, 59, 48, 0.4); }
+
+        .progress-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--ios-gray);
+        }
+
+        /* Food Bag Card */
+        .food-card {
+            background: linear-gradient(135deg, rgba(255, 149, 0, 0.08), rgba(175, 82, 222, 0.05));
+            border: 0.5px solid rgba(255, 149, 0, 0.2);
+        }
+
+        .food-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .food-title {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .food-subtitle {
+            font-size: 13px;
+            color: var(--ios-gray);
+        }
+
+        .food-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255, 149, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .food-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--ios-orange);
+            margin-bottom: 2px;
+        }
+
+        .stat-desc {
+            font-size: 11px;
+            color: var(--ios-gray);
+            font-weight: 500;
+        }
+
+        .alert-box {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .alert-critical {
+            background: rgba(255, 59, 48, 0.15);
+            color: var(--ios-red);
+            border: 0.5px solid rgba(255, 59, 48, 0.3);
+        }
+
+        .alert-warning {
+            background: rgba(255, 149, 0, 0.15);
+            color: var(--ios-orange);
+            border: 0.5px solid rgba(255, 149, 0, 0.3);
+        }
+
+        /* Empty State Premium */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            height: 100%;
+            min-height: 400px;
+        }
+
+        .empty-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 30px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            margin-bottom: 20px;
+            border: 0.5px solid var(--glass-border);
+        }
+
+        .empty-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .empty-text {
+            font-size: 15px;
+            color: var(--ios-gray);
+            margin-bottom: 24px;
+            max-width: 260px;
+            line-height: 1.4;
+        }
+
+        /* FAB Premium */
+        .fab {
+            position: fixed;
+            bottom: calc(env(safe-area-inset-bottom, 0) + 95px);
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--ios-blue);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 122, 255, 0.4), 0 8px 30px rgba(0, 0, 0, 0.4);
+            z-index: 50;
+            transition: all 0.2s ease;
+        }
+
+        .fab:active {
+            transform: scale(0.92);
+            box-shadow: 0 2px 10px rgba(0, 122, 255, 0.3);
+        }
+
+        /* Navigation Premium */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-top: 0.5px solid var(--glass-border);
+            padding: 8px 0 calc(env(safe-area-inset-bottom, 0) + 8px);
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+            height: 83px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--ios-gray);
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 500;
+            padding: 4px 20px;
+            border-radius: 12px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .nav-item.active {
+            color: var(--ios-blue);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: var(--ios-blue);
+            border-radius: 50%;
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+            transition: transform 0.2s;
+        }
+
+        .nav-item:active .nav-icon {
+            transform: scale(0.9);
+        }
+
+        /* Modal Premium - Fixed */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-sheet {
+            background: #1c1c1e;
+            width: 100%;
+            max-height: 90%;
+            border-radius: 24px 24px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-overlay.active .modal-sheet {
+            transform: translateY(0);
+        }
+
+        .modal-handle {
+            width: 36px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            margin: 8px auto;
+            flex-shrink: 0;
+        }
+
+        .modal-header {
+            padding: 8px 20px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--ios-gray);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 20px 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .modal-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Forms Premium */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: var(--ios-gray);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 0.5px solid var(--glass-border);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 400;
+            transition: all 0.2s;
+            -webkit-appearance: none;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--ios-blue);
+        }
+
+        .form-select {
+            background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%238E8E93' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Photo Upload Premium */
+        .photo-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .photo-upload {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .photo-upload.has-image {
+            border-style: solid;
+            border-color: var(--ios-blue);
+            border-width: 3px;
+        }
+
+        .photo-upload input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .photo-preview {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .photo-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--ios-gray);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .photo-icon {
+            font-size: 32px;
+            margin-bottom: 2px;
+        }
+
+        .photo-text {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .photo-hint {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--ios-gray);
+        }
+
+        /* Button Premium */
+        .btn {
+            padding: 14px 24px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn-primary {
+            background: var(--ios-blue);
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 0.5px solid var(--glass-border);
+        }
+
+        .btn-danger {
+            background: var(--ios-red);
+            color: white;
+        }
+
+        /* Delete Section */
+        .delete-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 0.5px solid var(--glass-border);
+        }
+
+        .delete-warning {
+            background: rgba(255, 59, 48, 0.1);
+            border: 0.5px solid rgba(255, 59, 48, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: var(--ios-red);
+            text-align: center;
+        }
+
+        .delete-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .delete-actions .btn {
+            flex: 1;
+        }
+
+        /* Stats Premium */
+        .stats-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card-premium {
+            background: var(--ios-card);
+            border-radius: 16px;
+            padding: 16px;
+            border: 0.5px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        }
+
+        .stat-number-large {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            background: linear-gradient(180deg, #fff, rgba(255,255,255,0.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label-small {
+            font-size: 13px;
+            color: var(--ios-gray);
+            font-weight: 500;
+        }
+
+        /* Chart */
+        .chart-container {
+            height: 180px;
+            margin: 20px 0;
+        }
+
+        .donut-chart {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .donut-chart svg {
+            transform: rotate(-90deg);
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+        }
+
+        .donut-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .donut-value {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .donut-label {
+            font-size: 11px;
+            color: var(--ios-gray);
+            font-weight: 500;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            background: rgba(255,255,255,0.05);
+            padding: 6px 10px;
+            border-radius: 20px;
+            border: 0.5px solid var(--glass-border);
+        }
+
+        .legend-color {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        /* List Items */
+        .cost-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            border: 0.5px solid var(--glass-border);
+        }
+
+        .cost-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 12px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--ios-blue), var(--ios-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .cost-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cost-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .cost-name {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+
+        .cost-detail {
+            font-size: 12px;
+            color: var(--ios-gray);
+        }
+
+        .cost-amount {
+            text-align: right;
+        }
+
+        .cost-price {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--ios-green);
+        }
+
+        .cost-unit {
+            font-size: 11px;
+            color: var(--ios-gray);
+        }
+
+        /* Toggle */
+        .toggle-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 0.5px solid var(--glass-border);
+        }
+
+        .toggle-label-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .toggle-switch {
+            width: 51px;
+            height: 31px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15.5px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: var(--ios-green);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 27px;
+            height: 27px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(20px);
+        }
+
+        /* Auth Screen */
+        .auth-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            z-index: 5000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .auth-logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--ios-blue), var(--ios-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 60px rgba(0, 122, 255, 0.3);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .auth-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .auth-subtitle {
+            font-size: 16px;
+            color: var(--ios-gray);
+            margin-bottom: 40px;
+            line-height: 1.4;
+        }
+
+        .google-btn {
+            background: white;
+            color: #1f1f1f;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+            margin-bottom: 12px;
+            transition: transform 0.2s;
+        }
+
+        .google-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Sync Status */
+        .sync-indicator {
+            position: fixed;
+            top: env(safe-area-inset-top, 47px);
+            left: 50%;
+            transform: translateX(-50%) translateY(-40px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 3000;
+            transition: transform 0.3s ease;
+            border: 0.5px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sync-indicator.show {
+            transform: translateX(-50%) translateY(8px);
+        }
+
+        .sync-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--ios-green);
+        }
+
+        .sync-dot.syncing {
+            background: var(--ios-blue);
+            animation: pulse 1.5s infinite;
+        }
+
+        .sync-dot.offline {
+            background: var(--ios-orange);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Utility */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .mt-16 { margin-top: 16px; }
+        .mb-16 { margin-bottom: 16px; }
+
+        /* Prevent bounce */
+        .modal-content {
+            overscroll-behavior: contain;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Sync Indicator -->
+        <div id="syncIndicator" class="sync-indicator">
+            <div class="sync-dot" id="syncDot"></div>
+            <span id="syncText">Synchronisé</span>
+        </div>
+
+        <!-- Auth Screen -->
+        <div id="authScreen" class="auth-screen">
+            <div class="auth-logo">🐾</div>
+            <h1 class="auth-title">Krokets</h1>
+            <p class="auth-subtitle">Gérez vos animaux et leurs repas</p>
+            <button class="google-btn" onclick="app.signInWithGoogle()">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Continuer avec Google
+            </button>
+            <button class="btn btn-secondary" onclick="app.useOfflineMode()" style="max-width: 300px;">
+                Utiliser hors ligne
+            </button>
+        </div>
+
+        <!-- Main App -->
+        <div id="mainApp" class="hidden">
+            <div class="status-bar"></div>
+            
+            <header class="header">
+                <h1 id="pageTitle">Mes Animaux</h1>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="app.showSettings()">⚙️</button>
+                </div>
+            </header>
+
+            <div class="content">
+                <!-- Animals Section -->
+                <section id="animalsSection" class="section active">
+                    <div id="animalsList"></div>
+                </section>
+
+                <!-- Food Section -->
+                <section id="foodSection" class="section">
+                    <div id="foodBagsList"></div>
+                </section>
+
+                <!-- Stats Section -->
+                <section id="statsSection" class="section">
+                    <div class="stats-header">
+                        <div class="stat-card-premium">
+                            <div class="stat-number-large" id="totalAnimals">0</div>
+                            <div class="stat-label-small">Animaux</div>
+                        </div>
+                        <div class="stat-card-premium">
+                            <div class="stat-number-large" id="totalCost" style="color: var(--ios-green);">0€</div>
+                            <div class="stat-label-small">Coût/an</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div style="font-size: 17px; font-weight: 600; margin-bottom: 2px;">Consommation</div>
+                                <div style="font-size: 13px; color: var(--ios-gray);">Répartition par animal</div>
+                            </div>
+                        </div>
+                        <div id="consumptionChart" class="chart-container"></div>
+                    </div>
+
+                    <div class="card" style="margin-top: 12px;">
+                        <div style="font-size: 17px; font-weight: 600; margin-bottom: 12px;">Coûts détaillés</div>
+                        <div id="costDetails"></div>
+                    </div>
+                </section>
+            </div>
+
+            <button class="fab" onclick="app.showAddModal()">+</button>
+
+            <!-- Navigation -->
+            <nav class="nav-bar">
+                <a href="#" class="nav-item active" onclick="app.showSection('animals', event)">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    <span>Animaux</span>
+                </a>
+                <a href="#" class="nav-item" onclick="app.showSection('food', event)">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>
+                    <span>Croquettes</span>
+                </a>
+                <a href="#" class="nav-item" onclick="app.showSection('stats', event)">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                    <span>Stats</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Animal Modal -->
+        <div id="animalModal" class="modal-overlay" onclick="app.closeModalOnOverlay(event, 'animalModal')">
+            <div class="modal-sheet" onclick="event.stopPropagation()">
+                <div class="modal-handle"></div>
+                <div class="modal-header">
+                    <h2 class="modal-title" id="animalModalTitle">Nouvel Animal</h2>
+                    <button class="modal-close" onclick="app.closeModal('animalModal')">&times;</button>
+                </div>
+                <div class="modal-content">
+                    <form id="animalForm" onsubmit="app.saveAnimal(event)">
+                        <input type="hidden" id="animalId">
+                        <input type="hidden" id="animalPhotoData">
+                        
+                        <div class="photo-section">
+                            <div class="photo-upload" id="photoUploadContainer">
+                                <input type="file" id="animalPhoto" accept="image/*" onchange="app.handlePhotoSelect(event)">
+                                <img id="photoPreview" class="photo-preview hidden">
+                                <div class="photo-placeholder" id="photoPlaceholder">
+                                    <div class="photo-icon">📷</div>
+                                    <div class="photo-text">Photo</div>
+                                </div>
+                            </div>
+                            <div class="photo-hint">Appuyez pour choisir une photo</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-input" id="animalName" required placeholder="ex: Rex">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Type</label>
+                                <select class="form-select" id="animalType" required>
+                                    <option value="dog">Chien</option>
+                                    <option value="cat">Chat</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Naissance</label>
+                                <input type="date" class="form-input" id="animalBirthDate" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Ration quotidienne (g)</label>
+                            <input type="number" class="form-input" id="animalDailyFood" required placeholder="250" min="1">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Sac de croquettes</label>
+                            <select class="form-select" id="animalFoodBag">
+                                <option value="">Aucun (à sélectionner plus tard)</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="margin-top: 8px;">Enregistrer</button>
+                        
+                        <div id="deleteAnimalSection" class="delete-section hidden">
+                            <div class="delete-warning">⚠️ Cette action est irréversible</div>
+                            <div class="delete-actions">
+                                <button type="button" class="btn btn-secondary" onclick="app.cancelDeleteAnimal()">Annuler</button>
+                                <button type="button" class="btn btn-danger" onclick="app.confirmDeleteAnimal()">Supprimer</button>
+                            </div>
+                        </div>
+                    </form>
+                    <button id="showDeleteAnimalBtn" type="button" class="btn btn-danger hidden" onclick="app.showDeleteAnimal()" style="margin-top: 12px;">
+                        Supprimer cet animal
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Food Bag Modal -->
+        <div id="foodBagModal" class="modal-overlay" onclick="app.closeModalOnOverlay(event, 'foodBagModal')">
+            <div class="modal-sheet" onclick="event.stopPropagation()">
+                <div class="modal-handle"></div>
+                <div class="modal-header">
+                    <h2 class="modal-title" id="foodBagModalTitle">Nouveau Sac</h2>
+                    <button class="modal-close" onclick="app.closeModal('foodBagModal')">&times;</button>
+                </div>
+                <div class="modal-content">
+                    <form id="foodBagForm" onsubmit="app.saveFoodBag(event)">
+                        <input type="hidden" id="foodBagId">
+                        
+                        <div class="form-group">
+                            <label class="form-label">Marque / Nom</label>
+                            <input type="text" class="form-input" id="foodBagName" required placeholder="Royal Canin Adult">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Poids total (kg)</label>
+                                <input type="number" class="form-input" id="foodBagTotalWeight" required placeholder="15" min="0.1" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Prix (€)</label>
+                                <input type="number" class="form-input" id="foodBagPrice" required placeholder="45.99" min="0" step="0.01">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Poids restant (kg)</label>
+                            <input type="number" class="form-input" id="foodBagRemaining" required placeholder="12.5" min="0" step="0.1">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Date d'achat</label>
+                            <input type="date" class="form-input" id="foodBagPurchaseDate" required>
+                        </div>
+
+                        <div style="background: rgba(0,122,255,0.1); border: 0.5px solid rgba(0,122,255,0.3); border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 13px; color: var(--ios-blue);">
+                            💡 Les animaux seront associés automatiquement selon leur sac sélectionné
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Enregistrer le sac</button>
+                        
+                        <div id="deleteFoodBagSection" class="delete-section hidden">
+                            <div class="delete-warning">⚠️ Les animaux associés perdront leur référence</div>
+                            <div class="delete-actions">
+                                <button type="button" class="btn btn-secondary" onclick="app.cancelDeleteFoodBag()">Annuler</button>
+                                <button type="button" class="btn btn-danger" onclick="app.confirmDeleteFoodBag()">Supprimer</button>
+                            </div>
+                        </div>
+                    </form>
+                    <button id="showDeleteFoodBagBtn" type="button" class="btn btn-danger hidden" onclick="app.showDeleteFoodBag()" style="margin-top: 12px;">
+                        Supprimer ce sac
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal-overlay" onclick="app.closeModalOnOverlay(event, 'settingsModal')">
+            <div class="modal-sheet" onclick="event.stopPropagation()">
+                <div class="modal-handle"></div>
+                <div class="modal-header">
+                    <h2 class="modal-title">Paramètres</h2>
+                    <button class="modal-close" onclick="app.closeModal('settingsModal')">&times;</button>
+                </div>
+                <div class="modal-content">
+                    <div class="toggle-item">
+                        <span class="toggle-label-text">Mode hors ligne</span>
+                        <div class="toggle-switch" id="offlineToggle" onclick="app.toggleOfflineMode()"></div>
+                    </div>
+                    
+                    <button class="btn btn-secondary mt-16" onclick="app.signOut()">
+                        Déconnexion
+                    </button>
+
+                    <div style="margin-top: 24px; text-align: center; color: var(--ios-gray); font-size: 12px; line-height: 1.5;">
+                        Krokets v1.0<br>
+                        Données stockées localement
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const app = {
+            data: {
+                animals: [],
+                foodBags: [],
+                currentUser: null,
+                isOffline: false,
+                db: null,
+                currentSection: 'animals'
+            },
+
+            init() {
+                this.loadFromLocalStorage();
+                this.setupFirebase();
+                this.checkAuthState();
+                this.setupNetworkListeners();
+                
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('animalBirthDate').value = today;
+                document.getElementById('foodBagPurchaseDate').value = today;
+                
+                // Prevent bounce on iOS
+                document.addEventListener('touchmove', function(e) {
+                    if (e.target.closest('.modal-content')) return;
+                    if (e.target.closest('.content')) return;
+                    e.preventDefault();
+                }, { passive: false });
+            },
+
+            setupFirebase() {
+                const firebaseConfig = {
+                    apiKey: "AIzaSyC74xW13wbXfyHrKu3DjJYwy-Nm4cO5n4g",
+                    authDomain: "krokets-ca695.firebaseapp.com",
+                    projectId: "krokets-ca695",
+                    storageBucket: "krokets-ca695.firebasestorage.app",
+                    messagingSenderId: "214999482185",
+                    appId: "1:214999482185:web:d098d28ca802aba2492498"
+                };
+
+                if (firebaseConfig.apiKey !== "YOUR_API_KEY" && typeof firebase !== 'undefined') {
+                    firebase.initializeApp(firebaseConfig);
+                    this.data.db = firebase.firestore();
+                }
+            },
+
+            checkAuthState() {
+                const savedUser = localStorage.getItem('petcare_user');
+                if (savedUser) {
+                    this.data.currentUser = JSON.parse(savedUser);
+                    this.showMainApp();
+                }
+            },
+
+            setupNetworkListeners() {
+                window.addEventListener('online', () => this.updateSyncStatus('online'));
+                window.addEventListener('offline', () => this.updateSyncStatus('offline'));
+                if (!navigator.onLine) this.updateSyncStatus('offline');
+            },
+
+            updateSyncStatus(status) {
+                const el = document.getElementById('syncIndicator');
+                const dot = document.getElementById('syncDot');
+                const text = document.getElementById('syncText');
+                
+                el.classList.add('show');
+                dot.className = 'sync-dot ' + status;
+                
+                if (status === 'online') {
+                    text.textContent = 'Synchronisé';
+                    setTimeout(() => el.classList.remove('show'), 2000);
+                } else if (status === 'offline') {
+                    text.textContent = 'Hors ligne';
+                } else if (status === 'syncing') {
+                    text.textContent = 'Synchronisation...';
+                }
+            },
+
+            async signInWithGoogle() {
+                try {
+                    if (typeof firebase === 'undefined' || !firebase.apps.length) {
+                        alert("Configuration Firebase requise. Utilisez le mode hors ligne.");
+                        return;
+                    }
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    const result = await firebase.auth().signInWithPopup(provider);
+                    this.data.currentUser = result.user;
+                    localStorage.setItem('petcare_user', JSON.stringify({
+                        uid: result.user.uid,
+                        displayName: result.user.displayName,
+                        email: result.user.email,
+                        photoURL: result.user.photoURL
+                    }));
+                    await this.syncFromCloud();
+                    this.showMainApp();
+                } catch (error) {
+                    alert("Erreur de connexion: " + error.message);
+                }
+            },
+
+            useOfflineMode() {
+                this.data.isOffline = true;
+                this.data.currentUser = { uid: 'local', displayName: 'Local' };
+                this.showMainApp();
+                this.updateSyncStatus('offline');
+            },
+
+            signOut() {
+                if (confirm("Déconnexion ?")) {
+                    localStorage.removeItem('petcare_user');
+                    localStorage.removeItem('petcare_data');
+                    location.reload();
+                }
+            },
+
+            showMainApp() {
+                document.getElementById('authScreen').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                this.renderAll();
+            },
+
+            loadFromLocalStorage() {
+                const saved = localStorage.getItem('petcare_data');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    this.data.animals = data.animals || [];
+                    this.data.foodBags = data.foodBags || [];
+                }
+            },
+
+            saveToLocalStorage() {
+                localStorage.setItem('petcare_data', JSON.stringify({
+                    animals: this.data.animals,
+                    foodBags: this.data.foodBags
+                }));
+            },
+
+            async syncToCloud() {
+                if (this.data.isOffline || !this.data.db) return;
+                this.updateSyncStatus('syncing');
+                try {
+                    await this.data.db.collection('users').doc(this.data.currentUser.uid).set({
+                        animals: this.data.animals,
+                        foodBags: this.data.foodBags,
+                        lastUpdate: new Date()
+                    });
+                    this.updateSyncStatus('online');
+                } catch (error) {
+                    this.updateSyncStatus('offline');
+                }
+            },
+
+            async syncFromCloud() {
+                if (this.data.isOffline || !this.data.db) return;
+                try {
+                    const doc = await this.data.db.collection('users').doc(this.data.currentUser.uid).get();
+                    if (doc.exists) {
+                        const data = doc.data();
+                        this.data.animals = data.animals || [];
+                        this.data.foodBags = data.foodBags || [];
+                        this.saveToLocalStorage();
+                        this.renderAll();
+                    }
+                } catch (error) {
+                    console.error("Sync error:", error);
+                }
+            },
+
+            showSection(section, event) {
+                if (event) event.preventDefault();
+                this.data.currentSection = section;
+                
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                event.target.closest('.nav-item').classList.add('active');
+                
+                document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+                document.getElementById(section + 'Section').classList.add('active');
+                
+                const titles = { animals: 'Mes Animaux', food: 'Croquettes', stats: 'Statistiques' };
+                document.getElementById('pageTitle').textContent = titles[section];
+                
+                if (section === 'stats') this.renderStats();
+            },
+
+            showAddModal() {
+                if (this.data.currentSection === 'animals') {
+                    this.showAddAnimal();
+                } else {
+                    this.showAddFoodBag();
+                }
+            },
+
+            // Photo handling - Library + Camera
+            handlePhotoSelect(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const photoData = e.target.result;
+                    document.getElementById('animalPhotoData').value = photoData;
+                    
+                    const preview = document.getElementById('photoPreview');
+                    preview.src = photoData;
+                    preview.classList.remove('hidden');
+                    
+                    document.getElementById('photoPlaceholder').classList.add('hidden');
+                    document.getElementById('photoUploadContainer').classList.add('has-image');
+                };
+                reader.readAsDataURL(file);
+            },
+
+            // Modal Management - Fixed
+            openModal(id) {
+                const modal = document.getElementById(id);
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            },
+
+            closeModal(id) {
+                const modal = document.getElementById(id);
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            },
+
+            closeModalOnOverlay(event, modalId) {
+                if (event.target === event.currentTarget) {
+                    this.closeModal(modalId);
+                }
+            },
+
+            // Animal Management
+            renderAnimals() {
+                const container = document.getElementById('animalsList');
+                
+                if (this.data.animals.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🐾</div>
+                            <div class="empty-title">Aucun animal</div>
+                            <div class="empty-text">Commencez par ajouter votre compagnon à quatre pattes</div>
+                            <button class="btn btn-primary" onclick="app.showAddAnimal()" style="max-width: 250px;">
+                                Ajouter un animal
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = this.data.animals.map(animal => {
+                    const age = this.calculateAge(animal.birthDate);
+                    const foodBag = this.data.foodBags.find(fb => fb.id === animal.foodBagId);
+                    
+                    let bagHtml = '';
+                    if (foodBag) {
+                        const status = this.getBagStatus(foodBag);
+                        bagHtml = `
+                            <div class="progress-section">
+                                <div class="progress-header">
+                                    <span class="progress-label">🍖 ${foodBag.name}</span>
+                                    <span class="progress-value">${status.percentage}%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${status.color}" style="width: ${status.percentage}%"></div>
+                                </div>
+                                <div class="progress-details">
+                                    <span>${foodBag.remaining}kg / ${foodBag.totalWeight}kg</span>
+                                    <span>${status.daysLeft > 0 ? `⏱️ ${status.daysLeft}j restants` : '⚠️ Vide'}</span>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        bagHtml = `
+                            <div class="alert-box alert-warning" style="margin-top: 8px;">
+                                ⚠️ Aucun sac associé
+                            </div>
+                        `;
+                    }
+                    
+                    const avatarContent = animal.photo ? 
+                        `<img src="${animal.photo}" alt="${animal.name}">` : 
+                        `<div class="animal-avatar-placeholder">${animal.type === 'dog' ? '🐕' : '🐈'}</div>`;
+                    
+                    return `
+                        <div class="card animal-card" onclick="app.editAnimal('${animal.id}')">
+                            <div class="animal-header">
+                                <div class="animal-avatar">${avatarContent}</div>
+                                <div class="animal-info">
+                                    <div class="animal-name">${animal.name}</div>
+                                    <div class="animal-meta">
+                                        <span>${age} an${age !== 1 ? 's' : ''}</span>
+                                        <span class="badge">${animal.dailyFood}g/j</span>
+                                        <span>${animal.type === 'dog' ? '🐕' : '🐈'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            ${bagHtml}
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            calculateAge(birthDate) {
+                const today = new Date();
+                const birth = new Date(birthDate);
+                let age = today.getFullYear() - birth.getFullYear();
+                const monthDiff = today.getMonth() - birth.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age--;
+                return age;
+            },
+
+            getBagStatus(bag) {
+                const total = parseFloat(bag.totalWeight);
+                const remaining = parseFloat(bag.remaining);
+                const percentage = Math.round((remaining / total) * 100);
+                
+                const associated = this.data.animals.filter(a => a.foodBagId === bag.id);
+                const dailyConsumption = associated.reduce((sum, a) => sum + (parseInt(a.dailyFood) / 1000), 0);
+                const daysLeft = dailyConsumption > 0 ? Math.floor(remaining / dailyConsumption) : 0;
+                
+                let color = 'progress-green';
+                if (percentage < 25) color = 'progress-red';
+                else if (percentage < 50) color = 'progress-orange';
+                else if (percentage < 75) color = 'progress-blue';
+                
+                return { percentage, daysLeft, color };
+            },
+
+            showAddAnimal() {
+                document.getElementById('animalModalTitle').textContent = 'Nouvel Animal';
+                document.getElementById('animalForm').reset();
+                document.getElementById('animalId').value = '';
+                document.getElementById('deleteAnimalSection').classList.add('hidden');
+                document.getElementById('showDeleteAnimalBtn').classList.add('hidden');
+                
+                // Reset photo
+                document.getElementById('photoPreview').classList.add('hidden');
+                document.getElementById('photoPlaceholder').classList.remove('hidden');
+                document.getElementById('photoUploadContainer').classList.remove('has-image');
+                document.getElementById('animalPhotoData').value = '';
+                
+                this.updateFoodBagSelect();
+                document.getElementById('animalBirthDate').value = new Date().toISOString().split('T')[0];
+                
+                this.openModal('animalModal');
+            },
+
+            editAnimal(id) {
+                const animal = this.data.animals.find(a => a.id === id);
+                if (!animal) return;
+                
+                document.getElementById('animalModalTitle').textContent = 'Modifier';
+                document.getElementById('animalId').value = animal.id;
+                document.getElementById('animalName').value = animal.name;
+                document.getElementById('animalType').value = animal.type;
+                document.getElementById('animalBirthDate').value = animal.birthDate;
+                document.getElementById('animalDailyFood').value = animal.dailyFood;
+                
+                if (animal.photo) {
+                    document.getElementById('photoPreview').src = animal.photo;
+                    document.getElementById('photoPreview').classList.remove('hidden');
+                    document.getElementById('photoPlaceholder').classList.add('hidden');
+                    document.getElementById('photoUploadContainer').classList.add('has-image');
+                    document.getElementById('animalPhotoData').value = animal.photo;
+                } else {
+                    document.getElementById('photoPreview').classList.add('hidden');
+                    document.getElementById('photoPlaceholder').classList.remove('hidden');
+                    document.getElementById('photoUploadContainer').classList.remove('has-image');
+                    document.getElementById('animalPhotoData').value = '';
+                }
+                
+                this.updateFoodBagSelect();
+                document.getElementById('animalFoodBag').value = animal.foodBagId || '';
+                
+                document.getElementById('deleteAnimalSection').classList.add('hidden');
+                document.getElementById('showDeleteAnimalBtn').classList.remove('hidden');
+                
+                this.openModal('animalModal');
+            },
+
+            updateFoodBagSelect() {
+                const select = document.getElementById('animalFoodBag');
+                const options = '<option value="">Aucun (à sélectionner plus tard)</option>';
+                
+                if (this.data.foodBags.length === 0) {
+                    select.innerHTML = options + '<option disabled>Aucun sac disponible</option>';
+                } else {
+                    select.innerHTML = options + this.data.foodBags.map(bag => 
+                        `<option value="${bag.id}">${bag.name} (${bag.remaining}kg)</option>`
+                    ).join('');
+                }
+            },
+
+            saveAnimal(event) {
+                event.preventDefault();
+                
+                const id = document.getElementById('animalId').value;
+                const animal = {
+                    id: id || 'animal_' + Date.now(),
+                    name: document.getElementById('animalName').value,
+                    type: document.getElementById('animalType').value,
+                    birthDate: document.getElementById('animalBirthDate').value,
+                    dailyFood: parseInt(document.getElementById('animalDailyFood').value),
+                    foodBagId: document.getElementById('animalFoodBag').value || null,
+                    photo: document.getElementById('animalPhotoData').value || null
+                };
+                
+                if (id) {
+                    const index = this.data.animals.findIndex(a => a.id === id);
+                    this.data.animals[index] = animal;
+                } else {
+                    this.data.animals.push(animal);
+                }
+                
+                this.saveToLocalStorage();
+                this.syncToCloud();
+                this.closeModal('animalModal');
+                this.renderAll();
+            },
+
+            showDeleteAnimal() {
+                document.getElementById('showDeleteAnimalBtn').classList.add('hidden');
+                document.getElementById('deleteAnimalSection').classList.remove('hidden');
+            },
+
+            cancelDeleteAnimal() {
+                document.getElementById('deleteAnimalSection').classList.add('hidden');
+                document.getElementById('showDeleteAnimalBtn').classList.remove('hidden');
+            },
+
+            confirmDeleteAnimal() {
+                const id = document.getElementById('animalId').value;
+                this.data.animals = this.data.animals.filter(a => a.id !== id);
+                this.saveToLocalStorage();
+                this.syncToCloud();
+                this.closeModal('animalModal');
+                this.renderAll();
+            },
+
+            // Food Bag Management
+            renderFoodBags() {
+                const container = document.getElementById('foodBagsList');
+                
+                if (this.data.foodBags.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🍖</div>
+                            <div class="empty-title">Aucun sac</div>
+                            <div class="empty-text">Ajoutez un sac de croquettes pour suivre la consommation</div>
+                            <button class="btn btn-primary" onclick="app.showAddFoodBag()" style="max-width: 250px;">
+                                Ajouter un sac
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = this.data.foodBags.map(bag => {
+                    const status = this.getBagStatus(bag);
+                    const associated = this.data.animals.filter(a => a.foodBagId === bag.id);
+                    const totalDaily = associated.reduce((sum, a) => sum + a.dailyFood, 0);
+                    
+                    let alertHtml = '';
+                    if (status.percentage < 10) {
+                        alertHtml = `<div class="alert-box alert-critical">⚠️ Stock critique - Rachetez maintenant !</div>`;
+                    } else if (status.daysLeft <= 7 && status.daysLeft > 0) {
+                        alertHtml = `<div class="alert-box alert-warning">⏱️ Fin dans ${status.daysLeft} jour${status.daysLeft > 1 ? 's' : ''}</div>`;
+                    }
+                    
+                    return `
+                        <div class="card food-card" onclick="app.editFoodBag('${bag.id}')">
+                            <div class="food-header">
+                                <div>
+                                    <div class="food-title">${bag.name}</div>
+                                    <div class="food-subtitle">${associated.map(a => a.name).join(', ') || 'Aucun animal'}</div>
+                                </div>
+                                <div class="food-icon">🍖</div>
+                            </div>
+                            
+                            <div class="progress-bar" style="margin-bottom: 8px;">
+                                <div class="progress-fill ${status.color}" style="width: ${status.percentage}%"></div>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 12px;">
+                                <span style="color: var(--ios-gray);">${bag.remaining}kg / ${bag.totalWeight}kg</span>
+                                <span style="font-weight: 600;">${status.percentage}%</span>
+                            </div>
+                            
+                            <div class="food-stats">
+                                <div class="stat-box">
+                                    <div class="stat-number">${status.daysLeft}</div>
+                                    <div class="stat-desc">Jours restants</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-number">${bag.price}€</div>
+                                    <div class="stat-desc">Prix du sac</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-number">${totalDaily}g</div>
+                                    <div class="stat-desc">/jour (${associated.length})</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-number">${Math.round((bag.price/bag.totalWeight)*100)/100}€</div>
+                                    <div class="stat-desc">Prix/kg</div>
+                                </div>
+                            </div>
+                            ${alertHtml}
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            showAddFoodBag() {
+                document.getElementById('foodBagModalTitle').textContent = 'Nouveau Sac';
+                document.getElementById('foodBagForm').reset();
+                document.getElementById('foodBagId').value = '';
+                document.getElementById('deleteFoodBagSection').classList.add('hidden');
+                document.getElementById('showDeleteFoodBagBtn').classList.add('hidden');
+                document.getElementById('foodBagPurchaseDate').value = new Date().toISOString().split('T')[0];
+                this.openModal('foodBagModal');
+            },
+
+            editFoodBag(id) {
+                const bag = this.data.foodBags.find(b => b.id === id);
+                if (!bag) return;
+                
+                document.getElementById('foodBagModalTitle').textContent = 'Modifier Sac';
+                document.getElementById('foodBagId').value = bag.id;
+                document.getElementById('foodBagName').value = bag.name;
+                document.getElementById('foodBagTotalWeight').value = bag.totalWeight;
+                document.getElementById('foodBagPrice').value = bag.price;
+                document.getElementById('foodBagRemaining').value = bag.remaining;
+                document.getElementById('foodBagPurchaseDate').value = bag.purchaseDate;
+                
+                document.getElementById('deleteFoodBagSection').classList.add('hidden');
+                document.getElementById('showDeleteFoodBagBtn').classList.remove('hidden');
+                
+                this.openModal('foodBagModal');
+            },
+
+            saveFoodBag(event) {
+                event.preventDefault();
+                
+                const id = document.getElementById('foodBagId').value;
+                const bag = {
+                    id: id || 'bag_' + Date.now(),
+                    name: document.getElementById('foodBagName').value,
+                    totalWeight: parseFloat(document.getElementById('foodBagTotalWeight').value),
+                    remaining: parseFloat(document.getElementById('foodBagRemaining').value),
+                    price: parseFloat(document.getElementById('foodBagPrice').value),
+                    purchaseDate: document.getElementById('foodBagPurchaseDate').value
+                };
+                
+                if (id) {
+                    const index = this.data.foodBags.findIndex(b => b.id === id);
+                    this.data.foodBags[index] = bag;
+                } else {
+                    this.data.foodBags.push(bag);
+                }
+                
+                this.saveToLocalStorage();
+                this.syncToCloud();
+                this.closeModal('foodBagModal');
+                this.renderAll();
+            },
+
+            showDeleteFoodBag() {
+                document.getElementById('showDeleteFoodBagBtn').classList.add('hidden');
+                document.getElementById('deleteFoodBagSection').classList.remove('hidden');
+            },
+
+            cancelDeleteFoodBag() {
+                document.getElementById('deleteFoodBagSection').classList.add('hidden');
+                document.getElementById('showDeleteFoodBagBtn').classList.remove('hidden');
+            },
+
+            confirmDeleteFoodBag() {
+                const id = document.getElementById('foodBagId').value;
+                this.data.animals.forEach(a => { if (a.foodBagId === id) a.foodBagId = null; });
+                this.data.foodBags = this.data.foodBags.filter(b => b.id !== id);
+                this.saveToLocalStorage();
+                this.syncToCloud();
+                this.closeModal('foodBagModal');
+                this.renderAll();
+            },
+
+            // Statistics
+            renderStats() {
+                document.getElementById('totalAnimals').textContent = this.data.animals.length;
+                
+                let annualCost = 0;
+                this.data.foodBags.forEach(bag => {
+                    const associated = this.data.animals.filter(a => a.foodBagId === bag.id);
+                    if (associated.length > 0) {
+                        const dailyConsumption = associated.reduce((sum, a) => sum + (a.dailyFood / 1000), 0);
+                        const pricePerKg = bag.price / bag.totalWeight;
+                        annualCost += dailyConsumption * pricePerKg * 365;
+                    }
+                });
+                document.getElementById('totalCost').textContent = Math.round(annualCost) + '€';
+                
+                this.renderConsumptionChart();
+                this.renderCostDetails();
+            },
+
+            renderConsumptionChart() {
+                const container = document.getElementById('consumptionChart');
+                const consumption = this.data.animals.map(animal => {
+                    const bag = this.data.foodBags.find(b => b.id === animal.foodBagId);
+                    if (!bag) return null;
+                    const consumed = bag.totalWeight - bag.remaining;
+                    const associated = this.data.animals.filter(a => a.foodBagId === bag.id);
+                    const totalDaily = associated.reduce((sum, a) => sum + a.dailyFood, 0);
+                    const share = totalDaily > 0 ? animal.dailyFood / totalDaily : 0;
+                    return { animal, consumed: consumed * share, percentage: 0 };
+                }).filter(item => item && item.consumed > 0);
+                
+                const total = consumption.reduce((sum, item) => sum + item.consumed, 0);
+                if (total === 0) {
+                    container.innerHTML = '<div style="text-align: center; color: var(--ios-gray); padding: 40px;">Aucune donnée</div>';
+                    return;
+                }
+                
+                consumption.forEach(item => item.percentage = (item.consumed / total) * 100);
+                
+                let angle = 0;
+                const colors = ['#007AFF', '#34C759', '#FF9500', '#AF52DE', '#FF2D55', '#5AC8FA'];
+                const segments = consumption.map((item, i) => {
+                    const segAngle = (item.percentage / 100) * 360;
+                    const start = angle;
+                    angle += segAngle;
+                    const end = angle;
+                    const x1 = 50 + 40 * Math.cos((start * Math.PI) / 180);
+                    const y1 = 50 + 40 * Math.sin((start * Math.PI) / 180);
+                    const x2 = 50 + 40 * Math.cos((end * Math.PI) / 180);
+                    const y2 = 50 + 40 * Math.sin((end * Math.PI) / 180);
+                    const large = segAngle > 180 ? 1 : 0;
+                    return {
+                        ...item,
+                        path: `M 50 50 L ${x1} ${y1} A 40 40 0 ${large} 1 ${x2} ${y2} Z`,
+                        color: colors[i % colors.length]
+                    };
+                });
+                
+                container.innerHTML = `
+                    <div class="donut-chart">
+                        <svg viewBox="0 0 100 100">
+                            ${segments.map(s => `<path d="${s.path}" fill="${s.color}" stroke="rgba(0,0,0,0.3)" stroke-width="0.5"/>`).join('')}
+                            <circle cx="50" cy="50" r="25" fill="#1c1c1e"/>
+                        </svg>
+                        <div class="donut-center">
+                            <div class="donut-value">${total.toFixed(1)}kg</div>
+                            <div class="donut-label">consommés</div>
+                        </div>
+                    </div>
+                    <div class="legend">
+                        ${segments.map(s => `
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: ${s.color}"></div>
+                                <span>${s.animal.name} ${s.percentage.toFixed(0)}%</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            },
+
+            renderCostDetails() {
+                const container = document.getElementById('costDetails');
+                const costs = this.data.animals.map(animal => {
+                    const bag = this.data.foodBags.find(b => b.id === animal.foodBagId);
+                    if (!bag) return null;
+                    const pricePerKg = bag.price / bag.totalWeight;
+                    const annual = ((animal.dailyFood / 1000) * pricePerKg * 365);
+                    return { animal, bag, annual, pricePerKg };
+                }).filter(Boolean);
+                
+                if (costs.length === 0) {
+                    container.innerHTML = '<div style="color: var(--ios-gray); text-align: center; padding: 20px;">Aucun animal associé</div>';
+                    return;
+                }
+                
+                container.innerHTML = costs.map(c => `
+                    <div class="cost-item">
+                        <div class="cost-avatar">
+                            ${c.animal.photo ? `<img src="${c.animal.photo}">` : (c.animal.type === 'dog' ? '🐕' : '🐈')}
+                        </div>
+                        <div class="cost-info">
+                            <div class="cost-name">${c.animal.name}</div>
+                            <div class="cost-detail">${c.bag.name} • ${c.animal.dailyFood}g/j</div>
+                        </div>
+                        <div class="cost-amount">
+                            <div class="cost-price">${Math.round(c.annual)}€</div>
+                            <div class="cost-unit">/an</div>
+                        </div>
+                    </div>
+                `).join('') + `
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 0.5px solid var(--glass-border); text-align: center;">
+                        <span style="color: var(--ios-gray); font-size: 13px;">Total: </span>
+                        <span style="color: var(--ios-green); font-size: 20px; font-weight: 700;">
+                            ${Math.round(costs.reduce((s, c) => s + c.annual, 0))}€/an
+                        </span>
+                    </div>
+                `;
+            },
+
+            renderAll() {
+                this.renderAnimals();
+                this.renderFoodBags();
+            },
+
+            showSettings() {
+                document.getElementById('offlineToggle').classList.toggle('active', this.data.isOffline);
+                this.openModal('settingsModal');
+            },
+
+            toggleOfflineMode() {
+                this.data.isOffline = !this.data.isOffline;
+                document.getElementById('offlineToggle').classList.toggle('active');
+                this.updateSyncStatus(this.data.isOffline ? 'offline' : 'online');
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => app.init());
+    </script>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</body>
+</html>
