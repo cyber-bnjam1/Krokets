@@ -5,7 +5,8 @@ const app = {
         currentUser: null,
         isOffline: false,
         db: null,
-        currentSection: 'animals'
+        currentSection: 'animals',
+        lastCalculationDate: null
     },
 
     init() {
@@ -13,6 +14,7 @@ const app = {
         this.setupFirebase();
         this.checkAuthState();
         this.setupNetworkListeners();
+        this.startDailyCalculation();
         
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('animalBirthDate').value = today;
@@ -24,6 +26,9 @@ const app = {
             if (e.target.closest('.content')) return;
             e.preventDefault();
         }, { passive: false });
+
+        // Check if we need to calculate daily consumption
+        this.checkDailyConsumption();
     },
 
     setupFirebase() {
@@ -72,6 +77,58 @@ const app = {
         } else if (status === 'syncing') {
             text.textContent = 'Synchronisation...';
         }
+    },
+
+    // Daily consumption calculation
+    startDailyCalculation() {
+        // Check every minute if we need to calculate
+        setInterval(() => this.checkDailyConsumption(), 60000);
+        // Also check when app becomes visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                this.checkDailyConsumption();
+            }
+        });
+    },
+
+    checkDailyConsumption() {
+        const today = new Date().toISOString().split('T')[0];
+        const lastCalc = this.data.lastCalculationDate;
+        
+        if (lastCalc === today) return; // Already calculated today
+        
+        // Calculate days since last calculation
+        let daysToCalculate = 1;
+        if (lastCalc) {
+            const lastDate = new Date(lastCalc);
+            const todayDate = new Date(today);
+            const diffTime = Math.abs(todayDate - lastDate);
+            daysToCalculate = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (daysToCalculate > 30) daysToCalculate = 30; // Max 30 days to prevent huge deductions
+        }
+        
+        // Deduct consumption for each day
+        for (let i = 0; i < daysToCalculate; i++) {
+            this.deductDailyConsumption();
+        }
+        
+        this.data.lastCalculationDate = today;
+        this.saveToLocalStorage();
+        this.syncToCloud();
+        this.renderAll();
+    },
+
+    deductDailyConsumption() {
+        this.data.foodBags.forEach(bag => {
+            const associated = this.data.animals.filter(a => a.foodBagId === bag.id);
+            if (associated.length === 0) return;
+            
+            const dailyConsumptionKg = associated.reduce((sum, a) => sum + (parseFloat(a.dailyFood) / 1000), 0);
+            let newRemaining = parseFloat(bag.remaining) - dailyConsumptionKg;
+            
+            if (newRemaining < 0) newRemaining = 0;
+            bag.remaining = newRemaining.toFixed(3); // 3 decimal precision
+        });
     },
 
     async signInWithGoogle() {
@@ -124,13 +181,15 @@ const app = {
             const data = JSON.parse(saved);
             this.data.animals = data.animals || [];
             this.data.foodBags = data.foodBags || [];
+            this.data.lastCalculationDate = data.lastCalculationDate || null;
         }
     },
 
     saveToLocalStorage() {
         localStorage.setItem('petcare_data', JSON.stringify({
             animals: this.data.animals,
-            foodBags: this.data.foodBags
+            foodBags: this.data.foodBags,
+            lastCalculationDate: this.data.lastCalculationDate
         }));
     },
 
@@ -141,6 +200,7 @@ const app = {
             await this.data.db.collection('users').doc(this.data.currentUser.uid).set({
                 animals: this.data.animals,
                 foodBags: this.data.foodBags,
+                lastCalculationDate: this.data.lastCalculationDate,
                 lastUpdate: new Date()
             });
             this.updateSyncStatus('online');
@@ -157,6 +217,7 @@ const app = {
                 const data = doc.data();
                 this.data.animals = data.animals || [];
                 this.data.foodBags = data.foodBags || [];
+                this.data.lastCalculationDate = data.lastCalculationDate || null;
                 this.saveToLocalStorage();
                 this.renderAll();
             }
@@ -189,6 +250,7 @@ const app = {
         }
     },
 
+    // Photo handling - Fixed for multiple animals
     handlePhotoSelect(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -204,8 +266,13 @@ const app = {
             
             document.getElementById('photoPlaceholder').classList.add('hidden');
             document.getElementById('photoUploadContainer').classList.add('has-image');
+            document.getElementById('photoChangeBtn').classList.remove('hidden');
         };
         reader.readAsDataURL(file);
+    },
+
+    changePhoto() {
+        document.getElementById('animalPhoto').click();
     },
 
     openModal(id) {
@@ -218,6 +285,13 @@ const app = {
         const modal = document.getElementById(id);
         modal.classList.remove('active');
         document.body.style.overflow = '';
+        
+        // Reset photo input for next use
+        if (id === 'animalModal') {
+            setTimeout(() => {
+                document.getElementById('animalPhoto').value = '';
+            }, 300);
+        }
     },
 
     closeModalOnOverlay(event, modalId) {
@@ -256,13 +330,13 @@ const app = {
                     <div class="progress-section">
                         <div class="progress-header">
                             <span class="progress-label">🍖 ${foodBag.name}</span>
-                            <span class="progress-value">${status.percentage}%</span>
+                            <span class="progress-value">${status.percentageExact}%</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill ${status.color}" style="width: ${status.percentage}%"></div>
+                            <div class="progress-fill ${status.color}" style="width: ${Math.max(0, Math.min(100, status.percentage))}%"></div>
                         </div>
                         <div class="progress-details">
-                            <span>${foodBag.remaining}kg / ${foodBag.totalWeight}kg</span>
+                            <span>${parseFloat(foodBag.remaining).toFixed(3)}kg / ${parseFloat(foodBag.totalWeight).toFixed(3)}kg</span>
                             <span>${status.daysLeft > 0 ? `⏱️ ${status.daysLeft}j restants` : '⚠️ Vide'}</span>
                         </div>
                     </div>
@@ -310,10 +384,11 @@ const app = {
     getBagStatus(bag) {
         const total = parseFloat(bag.totalWeight);
         const remaining = parseFloat(bag.remaining);
-        const percentage = Math.round((remaining / total) * 100);
+        const percentage = (remaining / total) * 100;
+        const percentageExact = percentage.toFixed(3);
         
         const associated = this.data.animals.filter(a => a.foodBagId === bag.id);
-        const dailyConsumption = associated.reduce((sum, a) => sum + (parseInt(a.dailyFood) / 1000), 0);
+        const dailyConsumption = associated.reduce((sum, a) => sum + (parseFloat(a.dailyFood) / 1000), 0);
         const daysLeft = dailyConsumption > 0 ? Math.floor(remaining / dailyConsumption) : 0;
         
         let color = 'progress-green';
@@ -321,20 +396,26 @@ const app = {
         else if (percentage < 50) color = 'progress-orange';
         else if (percentage < 75) color = 'progress-blue';
         
-        return { percentage, daysLeft, color };
+        return { percentage, percentageExact, daysLeft, color };
     },
 
     showAddAnimal() {
+        // Reset form completely
         document.getElementById('animalModalTitle').textContent = 'Nouvel Animal';
         document.getElementById('animalForm').reset();
         document.getElementById('animalId').value = '';
+        document.getElementById('animalPhotoData').value = '';
         document.getElementById('deleteAnimalSection').classList.add('hidden');
         document.getElementById('showDeleteAnimalBtn').classList.add('hidden');
         
-        document.getElementById('photoPreview').classList.add('hidden');
+        // Reset photo UI completely
+        const preview = document.getElementById('photoPreview');
+        preview.src = '';
+        preview.classList.add('hidden');
         document.getElementById('photoPlaceholder').classList.remove('hidden');
         document.getElementById('photoUploadContainer').classList.remove('has-image');
-        document.getElementById('animalPhotoData').value = '';
+        document.getElementById('photoChangeBtn').classList.add('hidden');
+        document.getElementById('animalPhoto').value = '';
         
         this.updateFoodBagSelect();
         document.getElementById('animalBirthDate').value = new Date().toISOString().split('T')[0];
@@ -353,17 +434,24 @@ const app = {
         document.getElementById('animalBirthDate').value = animal.birthDate;
         document.getElementById('animalDailyFood').value = animal.dailyFood;
         
+        // Reset photo first
+        const preview = document.getElementById('photoPreview');
+        const photoData = document.getElementById('animalPhotoData');
+        
         if (animal.photo) {
-            document.getElementById('photoPreview').src = animal.photo;
-            document.getElementById('photoPreview').classList.remove('hidden');
+            preview.src = animal.photo;
+            preview.classList.remove('hidden');
             document.getElementById('photoPlaceholder').classList.add('hidden');
             document.getElementById('photoUploadContainer').classList.add('has-image');
-            document.getElementById('animalPhotoData').value = animal.photo;
+            document.getElementById('photoChangeBtn').classList.remove('hidden');
+            photoData.value = animal.photo;
         } else {
-            document.getElementById('photoPreview').classList.add('hidden');
+            preview.src = '';
+            preview.classList.add('hidden');
             document.getElementById('photoPlaceholder').classList.remove('hidden');
             document.getElementById('photoUploadContainer').classList.remove('has-image');
-            document.getElementById('animalPhotoData').value = '';
+            document.getElementById('photoChangeBtn').classList.add('hidden');
+            photoData.value = '';
         }
         
         this.updateFoodBagSelect();
@@ -383,7 +471,7 @@ const app = {
             select.innerHTML = options + '<option disabled>Aucun sac disponible</option>';
         } else {
             select.innerHTML = options + this.data.foodBags.map(bag => 
-                `<option value="${bag.id}">${bag.name} (${bag.remaining}kg)</option>`
+                `<option value="${bag.id}">${bag.name} (${parseFloat(bag.remaining).toFixed(3)}kg)</option>`
             ).join('');
         }
     },
@@ -397,7 +485,7 @@ const app = {
             name: document.getElementById('animalName').value,
             type: document.getElementById('animalType').value,
             birthDate: document.getElementById('animalBirthDate').value,
-            dailyFood: parseInt(document.getElementById('animalDailyFood').value),
+            dailyFood: parseFloat(document.getElementById('animalDailyFood').value),
             foodBagId: document.getElementById('animalFoodBag').value || null,
             photo: document.getElementById('animalPhotoData').value || null
         };
@@ -476,12 +564,12 @@ const app = {
                     </div>
                     
                     <div class="progress-bar" style="margin-bottom: 8px;">
-                        <div class="progress-fill ${status.color}" style="width: ${status.percentage}%"></div>
+                        <div class="progress-fill ${status.color}" style="width: ${Math.max(0, Math.min(100, status.percentage))}%"></div>
                     </div>
                     
                     <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 12px;">
-                        <span style="color: var(--ios-gray);">${bag.remaining}kg / ${bag.totalWeight}kg</span>
-                        <span style="font-weight: 600;">${status.percentage}%</span>
+                        <span style="color: var(--ios-gray);">${parseFloat(bag.remaining).toFixed(3)}kg / ${parseFloat(bag.totalWeight).toFixed(3)}kg</span>
+                        <span style="font-weight: 600; font-family: monospace;">${status.percentageExact}%</span>
                     </div>
                     
                     <div class="food-stats">
@@ -498,7 +586,7 @@ const app = {
                             <div class="stat-desc">/jour (${associated.length})</div>
                         </div>
                         <div class="stat-box">
-                            <div class="stat-number">${Math.round((bag.price/bag.totalWeight)*100)/100}€</div>
+                            <div class="stat-number">${(bag.price/bag.totalWeight).toFixed(3)}€</div>
                             <div class="stat-desc">Prix/kg</div>
                         </div>
                     </div>
@@ -543,8 +631,8 @@ const app = {
         const bag = {
             id: id || 'bag_' + Date.now(),
             name: document.getElementById('foodBagName').value,
-            totalWeight: parseFloat(document.getElementById('foodBagTotalWeight').value),
-            remaining: parseFloat(document.getElementById('foodBagRemaining').value),
+            totalWeight: parseFloat(document.getElementById('foodBagTotalWeight').value).toFixed(3),
+            remaining: parseFloat(document.getElementById('foodBagRemaining').value).toFixed(3),
             price: parseFloat(document.getElementById('foodBagPrice').value),
             purchaseDate: document.getElementById('foodBagPurchaseDate').value
         };
@@ -605,7 +693,7 @@ const app = {
         const consumption = this.data.animals.map(animal => {
             const bag = this.data.foodBags.find(b => b.id === animal.foodBagId);
             if (!bag) return null;
-            const consumed = bag.totalWeight - bag.remaining;
+            const consumed = parseFloat(bag.totalWeight) - parseFloat(bag.remaining);
             const associated = this.data.animals.filter(a => a.foodBagId === bag.id);
             const totalDaily = associated.reduce((sum, a) => sum + a.dailyFood, 0);
             const share = totalDaily > 0 ? animal.dailyFood / totalDaily : 0;
@@ -646,7 +734,7 @@ const app = {
                     <circle cx="50" cy="50" r="25" fill="#1c1c1e"/>
                 </svg>
                 <div class="donut-center">
-                    <div class="donut-value">${total.toFixed(1)}kg</div>
+                    <div class="donut-value">${total.toFixed(3)}kg</div>
                     <div class="donut-label">consommés</div>
                 </div>
             </div>
@@ -654,7 +742,7 @@ const app = {
                 ${segments.map(s => `
                     <div class="legend-item">
                         <div class="legend-color" style="background: ${s.color}"></div>
-                        <span>${s.animal.name} ${s.percentage.toFixed(0)}%</span>
+                        <span>${s.animal.name} ${s.percentage.toFixed(1)}%</span>
                     </div>
                 `).join('')}
             </div>
@@ -666,7 +754,7 @@ const app = {
         const costs = this.data.animals.map(animal => {
             const bag = this.data.foodBags.find(b => b.id === animal.foodBagId);
             if (!bag) return null;
-            const pricePerKg = bag.price / bag.totalWeight;
+            const pricePerKg = bag.price / parseFloat(bag.totalWeight);
             const annual = ((animal.dailyFood / 1000) * pricePerKg * 365);
             return { animal, bag, annual, pricePerKg };
         }).filter(Boolean);
