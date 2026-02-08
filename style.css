@@ -123,7 +123,7 @@ body {
     top: calc(env(safe-area-inset-top, 0) + 52px);
     left: 0;
     right: 0;
-    bottom: calc(env(safe-area-inset-bottom, 0) + 83px);
+    bottom: calc(env(safe-area-inset-bottom, 0) + 90px);
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -275,19 +275,21 @@ body {
 .progress-value {
     font-weight: 600;
     color: #fff;
+    font-family: 'SF Mono', monospace;
+    font-size: 12px;
 }
 
 .progress-bar {
-    height: 6px;
+    height: 8px;
     background: rgba(255, 255, 255, 0.08);
-    border-radius: 3px;
+    border-radius: 4px;
     overflow: hidden;
     position: relative;
 }
 
 .progress-fill {
     height: 100%;
-    border-radius: 3px;
+    border-radius: 4px;
     transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
 }
@@ -374,6 +376,7 @@ body {
     font-weight: 700;
     color: var(--ios-orange);
     margin-bottom: 2px;
+    font-family: 'SF Mono', monospace;
 }
 
 .stat-desc {
@@ -451,7 +454,7 @@ body {
 
 .fab {
     position: fixed;
-    bottom: calc(env(safe-area-inset-bottom, 0) + 95px);
+    bottom: calc(env(safe-area-inset-bottom, 0) + 100px);
     right: 20px;
     width: 56px;
     height: 56px;
@@ -474,35 +477,40 @@ body {
     box-shadow: 0 2px 10px rgba(0, 122, 255, 0.3);
 }
 
+/* Navigation - Fixed for PWA */
 .nav-bar {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-top: 0.5px solid var(--glass-border);
     padding: 8px 0 calc(env(safe-area-inset-bottom, 0) + 8px);
     display: flex;
     justify-content: space-around;
+    align-items: center;
     z-index: 100;
-    height: 83px;
+    height: 90px;
 }
 
 .nav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 4px;
     color: var(--ios-gray);
     text-decoration: none;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 500;
-    padding: 4px 20px;
+    padding: 8px 16px;
     border-radius: 12px;
     transition: all 0.2s;
     position: relative;
+    min-width: 64px;
+    height: 50px;
 }
 
 .nav-item.active {
@@ -512,7 +520,7 @@ body {
 .nav-item.active::before {
     content: '';
     position: absolute;
-    top: 0;
+    top: 4px;
     left: 50%;
     transform: translateX(-50%);
     width: 4px;
@@ -522,10 +530,11 @@ body {
 }
 
 .nav-icon {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     fill: currentColor;
     transition: transform 0.2s;
+    flex-shrink: 0;
 }
 
 .nav-item:active .nav-icon {
@@ -734,6 +743,23 @@ body {
     font-weight: 500;
 }
 
+.photo-change-btn {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    z-index: 5;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+}
+
 .photo-hint {
     margin-top: 8px;
     font-size: 12px;
@@ -836,6 +862,7 @@ body {
     background: linear-gradient(180deg, #fff, rgba(255,255,255,0.7));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    font-family: 'SF Mono', monospace;
 }
 
 .stat-label-small {
@@ -872,6 +899,7 @@ body {
 .donut-value {
     font-size: 22px;
     font-weight: 700;
+    font-family: 'SF Mono', monospace;
 }
 
 .donut-label {
@@ -959,6 +987,7 @@ body {
     font-size: 17px;
     font-weight: 700;
     color: var(--ios-green);
+    font-family: 'SF Mono', monospace;
 }
 
 .cost-unit {
@@ -1085,6 +1114,16 @@ body {
 
 .google-btn:active {
     transform: scale(0.98);
+}
+
+.info-box {
+    background: rgba(0,122,255,0.1);
+    border: 0.5px solid rgba(0,122,255,0.3);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--ios-blue);
 }
 
 .sync-indicator {
