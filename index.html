@@ -14,6 +14,7 @@
     <link rel="icon" type="image/png" href="icon3.png">
     <link rel="apple-touch-icon" href="icon3.png">
     <link rel="apple-touch-icon" sizes="192x192" href="icon3.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="icon3.png">
     
     <!-- Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -36,10 +37,10 @@
         <div id="authScreen" class="auth-screen">
             <div class="auth-logo">
                 <img src="icon3.png" alt="Krokets" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                <div style="display: none; font-size: 60px;">🐾</div>
+                <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 60px;">🐾</div>
             </div>
             <h1 class="auth-title">Krokets</h1>
-            <p class="auth-subtitle">Gérez vos animaux et leurs repas avec élégance</p>
+            <p class="auth-subtitle">Gérez vos animaux et leurs repas avec précision</p>
             <button class="google-btn" onclick="app.signInWithGoogle()">
                 <svg width="20" height="20" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -111,15 +112,22 @@
             <!-- Navigation -->
             <nav class="nav-bar">
                 <a href="#" class="nav-item active" onclick="app.showSection('animals', event)">
-                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    <svg class="nav-icon" viewBox="0 0 24 24" width="28" height="28">
+                        <path d="M4.5 12.75l6 6 9-13.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: none;"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+                    </svg>
                     <span>Animaux</span>
                 </a>
                 <a href="#" class="nav-item" onclick="app.showSection('food', event)">
-                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>
+                    <svg class="nav-icon" viewBox="0 0 24 24" width="28" height="28">
+                        <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z" fill="currentColor"/>
+                    </svg>
                     <span>Croquettes</span>
                 </a>
                 <a href="#" class="nav-item" onclick="app.showSection('stats', event)">
-                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                    <svg class="nav-icon" viewBox="0 0 24 24" width="28" height="28">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" fill="currentColor"/>
+                    </svg>
                     <span>Stats</span>
                 </a>
             </nav>
@@ -140,12 +148,13 @@
                         
                         <div class="photo-section">
                             <div class="photo-upload" id="photoUploadContainer">
-                                <input type="file" id="animalPhoto" accept="image/*" onchange="app.handlePhotoSelect(event)">
+                                <input type="file" id="animalPhoto" accept="image/*" onchange="app.handlePhotoSelect(event)" style="display: none;">
                                 <img id="photoPreview" class="photo-preview hidden">
                                 <div class="photo-placeholder" id="photoPlaceholder">
                                     <div class="photo-icon">📷</div>
                                     <div class="photo-text">Photo</div>
                                 </div>
+                                <button type="button" class="photo-change-btn hidden" id="photoChangeBtn" onclick="app.changePhoto()">Changer</button>
                             </div>
                             <div class="photo-hint">Appuyez pour choisir une photo</div>
                         </div>
@@ -218,7 +227,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Poids total (kg)</label>
-                                <input type="number" class="form-input" id="foodBagTotalWeight" required placeholder="15" min="0.1" step="0.1">
+                                <input type="number" class="form-input" id="foodBagTotalWeight" required placeholder="15" min="0.1" step="0.001">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Prix (€)</label>
@@ -227,8 +236,8 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Poids restant (kg)</label>
-                            <input type="number" class="form-input" id="foodBagRemaining" required placeholder="12.5" min="0" step="0.1">
+                            <label class="form-label">Poids restant actuel (kg)</label>
+                            <input type="number" class="form-input" id="foodBagRemaining" required placeholder="12.5" min="0" step="0.001">
                         </div>
 
                         <div class="form-group">
@@ -236,8 +245,8 @@
                             <input type="date" class="form-input" id="foodBagPurchaseDate" required>
                         </div>
 
-                        <div style="background: rgba(0,122,255,0.1); border: 0.5px solid rgba(0,122,255,0.3); border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 13px; color: var(--ios-blue);">
-                            💡 Les animaux seront associés automatiquement selon leur sac sélectionné
+                        <div class="info-box">
+                            💡 La consommation sera déduite automatiquement chaque jour
                         </div>
 
                         <button type="submit" class="btn btn-primary">Enregistrer le sac</button>
@@ -276,8 +285,8 @@
                     </button>
 
                     <div style="margin-top: 24px; text-align: center; color: var(--ios-gray); font-size: 12px; line-height: 1.5;">
-                        Krokets v1.0<br>
-                        Déployé sur Vercel
+                        Krokets v2.0<br>
+                        Précision 3 décimales • Décompte journalier
                     </div>
                 </div>
             </div>
