@@ -133,7 +133,7 @@
             </nav>
         </div>
 
-        <!-- Animal Modal -->
+                <!-- Animal Modal -->
         <div id="animalModal" class="modal-overlay" onclick="app.closeModalOnOverlay(event, 'animalModal')">
             <div class="modal-sheet" onclick="event.stopPropagation()">
                 <div class="modal-handle"></div>
@@ -147,16 +147,16 @@
                         <input type="hidden" id="animalPhotoData">
                         
                         <div class="photo-section">
-                            <div class="photo-upload" id="photoUploadContainer">
-                                <input type="file" id="animalPhoto" accept="image/*" onchange="app.handlePhotoSelect(event)" style="display: none;">
+                            <div class="photo-upload" id="photoUploadContainer" onclick="app.triggerPhotoSelect()">
+                                <input type="file" id="animalPhoto" accept="image/*" onchange="app.handlePhotoSelect(event)" style="opacity: 0; position: absolute; width: 100%; height: 100%; cursor: pointer;">
                                 <img id="photoPreview" class="photo-preview hidden">
                                 <div class="photo-placeholder" id="photoPlaceholder">
                                     <div class="photo-icon">📷</div>
                                     <div class="photo-text">Photo</div>
                                 </div>
-                                <button type="button" class="photo-change-btn hidden" id="photoChangeBtn" onclick="app.changePhoto()">Changer</button>
+                                <button type="button" class="photo-change-btn hidden" id="photoChangeBtn" onclick="event.stopPropagation(); app.triggerPhotoSelect()">Changer</button>
                             </div>
-                            <div class="photo-hint">Appuyez pour choisir une photo</div>
+                            <div class="photo-hint" id="photoHint">Appuyez pour choisir une photo</div>
                         </div>
 
                         <div class="form-group">
