@@ -249,7 +249,40 @@ const app = {
             this.showAddFoodBag();
         }
     },
+    // Photo handling - Fixed
+    triggerPhotoSelect() {
+        document.getElementById('animalPhoto').click();
+    },
 
+    handlePhotoSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Vérification taille (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image trop grande. Maximum 5MB.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const photoData = e.target.result;
+            document.getElementById('animalPhotoData').value = photoData;
+            
+            const preview = document.getElementById('photoPreview');
+            preview.src = photoData;
+            preview.classList.remove('hidden');
+            
+            document.getElementById('photoPlaceholder').classList.add('hidden');
+            document.getElementById('photoUploadContainer').classList.add('has-image');
+            document.getElementById('photoChangeBtn').classList.remove('hidden');
+            document.getElementById('photoHint').textContent = 'Appuyez sur la photo pour changer';
+        };
+        reader.onerror = () => {
+            alert('Erreur lors de la lecture de l\'image');
+        };
+        reader.readAsDataURL(file);
+    },
     // Photo handling - Fixed for multiple animals
     handlePhotoSelect(event) {
         const file = event.target.files[0];
@@ -399,7 +432,7 @@ const app = {
         return { percentage, percentageExact, daysLeft, color };
     },
 
-    showAddAnimal() {
+        showAddAnimal() {
         // Reset form completely
         document.getElementById('animalModalTitle').textContent = 'Nouvel Animal';
         document.getElementById('animalForm').reset();
@@ -415,7 +448,11 @@ const app = {
         document.getElementById('photoPlaceholder').classList.remove('hidden');
         document.getElementById('photoUploadContainer').classList.remove('has-image');
         document.getElementById('photoChangeBtn').classList.add('hidden');
-        document.getElementById('animalPhoto').value = '';
+        document.getElementById('photoHint').textContent = 'Appuyez pour choisir une photo';
+        
+        // Clear file input
+        const fileInput = document.getElementById('animalPhoto');
+        fileInput.value = '';
         
         this.updateFoodBagSelect();
         document.getElementById('animalBirthDate').value = new Date().toISOString().split('T')[0];
@@ -434,7 +471,10 @@ const app = {
         document.getElementById('animalBirthDate').value = animal.birthDate;
         document.getElementById('animalDailyFood').value = animal.dailyFood;
         
-        // Reset photo first
+        // Clear file input first
+        document.getElementById('animalPhoto').value = '';
+        
+        // Reset photo UI
         const preview = document.getElementById('photoPreview');
         const photoData = document.getElementById('animalPhotoData');
         
@@ -444,6 +484,7 @@ const app = {
             document.getElementById('photoPlaceholder').classList.add('hidden');
             document.getElementById('photoUploadContainer').classList.add('has-image');
             document.getElementById('photoChangeBtn').classList.remove('hidden');
+            document.getElementById('photoHint').textContent = 'Appuyez sur la photo pour changer';
             photoData.value = animal.photo;
         } else {
             preview.src = '';
@@ -451,6 +492,7 @@ const app = {
             document.getElementById('photoPlaceholder').classList.remove('hidden');
             document.getElementById('photoUploadContainer').classList.remove('has-image');
             document.getElementById('photoChangeBtn').classList.add('hidden');
+            document.getElementById('photoHint').textContent = 'Appuyez pour choisir une photo';
             photoData.value = '';
         }
         
